@@ -1207,6 +1207,17 @@ function toggleRoast() {
   isRoastMode = !isRoastMode;
   document.body.classList.toggle('roast-mode', isRoastMode);
   document.getElementById('toggle-label').textContent = isRoastMode ? 'ROAST MODE' : 'PROFESSIONAL';
+  
+  // If results are showing, re-run analysis with new mode
+  if (document.getElementById('results').classList.contains('active')) {
+    const url = currentProductData?.url || document.getElementById('url-input').value;
+    const query = currentQuery || document.getElementById('query-input').value;
+    if (url) {
+      document.getElementById('url-input').value = url;
+      document.getElementById('query-input').value = query;
+      analyze();
+    }
+  }
 }
 
 function loadDemo() {
