@@ -9,6 +9,7 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 SCRAPER_API_KEY = os.environ.get("SCRAPER_API_KEY", "")
+RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "")
 
 # ---------- SCRAPING ----------
 
@@ -296,37 +297,36 @@ def calculate_selleriq_score(ai_visibility, review_data, rufus_data):
     return max(20, min(98, int(base)))
 
 
-# ---------- COMPETITOR DATA ----------
+# ---------- COMPETITOR DATA (RapidAPI) ----------
 
 def generate_competitor_data(your_score, product_data=None):
     try:
         title = product_data.get("title", "") if product_data else ""
         search_query = " ".join(title.split()[:4])
 
-        search_url = f"https://www.amazon.com/s?k={requests.utils.quote(search_query)}"
-        scraper_url = f"http://api.scraperapi.com?api_key={SCRAPER_API_KEY}&url={search_url}"
-        resp = requests.get(scraper_url, timeout=25)
-        soup = BeautifulSoup(resp.text, "html.parser")
+        url = "https://real-time-amazon-data.p.rapidapi.com/search"
+        headers = {
+            "X-RapidAPI-Key": RAPIDAPI_KEY,
+            "X-RapidAPI-Host": "real-time-amazon-data.p.rapidapi.com"
+        }
+        params = {"query": search_query, "page": "1", "country": "US", "category_id": "aps"}
 
-        # Try multiple selectors
-        results = soup.select("h2 span.a-text-normal")
-        if not results:
-            results = soup.select("[data-cy='title-recipe'] span")
-        if not results:
-            results = soup.select("h2.a-size-mini span")
+        resp = requests.get(url, headers=headers, params=params, timeout=20)
+        data = resp.json()
 
+        products = data.get("data", {}).get("products", [])
         names = []
-        for r in results:
-            text = r.get_text(strip=True)
-            if text and len(text) > 5 and text.lower() not in title.lower():
-                brand = " ".join(text.split()[:2])
-                if brand not in names:
-                    names.append(brand)
+        for p in products:
+            brand = p.get("product_title", "")
+            if brand and title[:15].lower() not in brand.lower():
+                short_name = " ".join(brand.split()[:3])
+                if short_name not in names:
+                    names.append(short_name)
             if len(names) >= 4:
                 break
 
         if len(names) < 4:
-            raise Exception("Not enough results")
+            raise Exception("Not enough results from RapidAPI")
 
     except:
         return generate_competitor_data_fallback(your_score, product_data)
@@ -390,7 +390,6 @@ def analyze():
     strategic_advice = generate_strategic_advice(product_data, ai_visibility, review_data, rufus_data, roast)
     selleriq_score = calculate_selleriq_score(ai_visibility, review_data, rufus_data)
 
-    # ✅ FIXED: passing product_data for real-time competitor scraping
     competitors = generate_competitor_data(selleriq_score, product_data)
 
     bsr = product_data.get("bsr", 5000)
