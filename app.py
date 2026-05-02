@@ -96,22 +96,22 @@ def call_groq(prompt):
     }
     r = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=body, timeout=20)
     return r.json()["choices"][0]["message"]["content"]
+
 def call_gemini(prompt):
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json"
     }
     body = {
-        "model": "meta-llama/llama-3.1-8b-instruct:free",
+        "model": "openrouter/auto",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 300
     }
-    r = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=body, timeout=20)
+    r = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=body, timeout=30)
     data = r.json()
     if "choices" not in data:
         raise Exception(f"OpenRouter error: {data}")
     return data["choices"][0]["message"]["content"]
-
 
 # ---------- ANALYSIS FUNCTIONS ----------
 
