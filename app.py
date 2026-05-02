@@ -170,12 +170,12 @@ Analyze and return JSON only (no markdown):
         return json.loads(clean)
     except:
         return {
-            "key_purchase_criteria": ["Third-party tested", "Absorption quality", "Senior-safe dosage"],
-            "top_complaints": ["Capsule size too large", "No dosage for elderly"],
+            "key_purchase_criteria": ["Product efficacy", "Value for money", "Ingredient quality"],
+            "top_complaints": ["Packaging issues", "Inconsistent results"],
             "sentiment_score": 78,
             "fake_review_percentage": 15,
-            "missing_in_listing": ["Senior dosage guidance", "Sleep science reference", "Third-party certification"],
-            "summary": "Product has strong reviews but listing lacks key trust signals that AI engines look for."
+            "missing_in_listing": ["Clinical evidence", "Third-party certification", "Usage instructions"],
+            "summary": "Product has solid reviews but listing lacks key trust signals that AI engines look for."
         }
 
 
@@ -211,18 +211,18 @@ List exactly 3 specific missing pieces of information that would improve AI reco
             gaps = gaps_data.get("gaps", [])
         except:
             gaps = [
-                {"title": "Senior dosage guidance", "description": "Rufus cannot answer 'is this safe for elderly?' without age-specific dosing info."},
-                {"title": "Third-party tested claim", "description": "All 3 AI engines cite this as a primary trust signal for supplements."},
-                {"title": "Sleep science reference", "description": "28% of reviews mention sleep but your listing doesn't mention it once."}
+                {"title": "Usage instructions", "description": "Rufus cannot answer 'how do I use this?' without clear directions in the listing."},
+                {"title": "Third-party certification", "description": "All 3 AI engines cite verified certifications as a primary trust signal."},
+                {"title": "Key ingredient benefits", "description": "Shoppers ask about specific ingredients — your listing doesn't explain what each does."}
             ]
         return {"rufus_answer": resp, "gaps": gaps[:3]}
     except Exception as e:
         return {
-            "rufus_answer": "This magnesium supplement may support relaxation. However, the listing doesn't specify dosage for seniors or mention third-party testing. Consult a doctor before use.",
+            "rufus_answer": "This product may meet your needs. However, the listing lacks specific details and third-party verification that would help give a more confident recommendation.",
             "gaps": [
-                {"title": "Senior dosage guidance", "description": "Rufus cannot answer 'is this safe for elderly?' without age-specific dosing info."},
-                {"title": "Third-party tested claim", "description": "All 3 AI engines cite this as a primary trust signal."},
-                {"title": "Sleep science reference", "description": "28% of reviews mention sleep but your listing doesn't."}
+                {"title": "Usage instructions", "description": "Rufus cannot answer 'how do I use this?' without clear step-by-step directions in the listing."},
+                {"title": "Third-party certification", "description": "All 3 AI engines cite verified certifications as a primary trust signal for this category."},
+                {"title": "Key ingredient benefits", "description": "Shoppers ask about specific ingredients — your listing doesn't explain what each ingredient does."}
             ]
         }
 
@@ -373,11 +373,11 @@ def get_demo_product_data(url):
 
 def generate_competitor_data(your_score):
     competitors = [
-        {"name": "Doctor's Best", "score": min(98, your_score + random.randint(18, 28))},
-        {"name": "Pure Encapsulations", "score": min(98, your_score + random.randint(8, 18))},
-        {"name": "Thorne Magnesium", "score": min(98, your_score + random.randint(3, 12))},
+        {"name": "Top Competitor A", "score": min(98, your_score + random.randint(18, 28))},
+        {"name": "Top Competitor B", "score": min(98, your_score + random.randint(8, 18))},
+        {"name": "Top Competitor C", "score": min(98, your_score + random.randint(3, 12))},
         {"name": "You", "score": your_score, "is_you": True},
-        {"name": "Nature's Bounty", "score": max(20, your_score - random.randint(8, 18))}
+        {"name": "Lower Competitor", "score": max(20, your_score - random.randint(8, 18))}
     ]
     competitors.sort(key=lambda x: x["score"], reverse=True)
     return competitors
