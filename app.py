@@ -97,12 +97,13 @@ def call_groq(prompt):
     r = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=body, timeout=20)
     return r.json()["choices"][0]["message"]["content"]
 
-
 def call_gemini(prompt):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=={GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
     body = {"contents": [{"parts": [{"text": prompt}]}]}
     r = requests.post(url, json=body, timeout=20)
     data = r.json()
+    if "candidates" not in data:
+        raise Exception(f"Gemini error: {data}")
     return data["candidates"][0]["content"]["parts"][0]["text"]
 
 
