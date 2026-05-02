@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SellerIQ — Amazon Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1209;
+    --paper: #f5f0e8;
+    --paper2: #ede8dc;
+    --accent: #c8472a;
+    --accent2: #e8a020;
+    --grade-a: #2a7a3b;
+    --grade-b: #2b6cb0;
+    --grade-c: #c8472a;
+    --grade-f: #8b1a1a;
+    --border: #c8b89a;
+    --muted: #7a6f60;
+    --roast-bg: #0d0d0d;
+    --roast-text: #e8ff00;
+    --roast-accent: #ff2d78;
+    --roast-muted: #888;
+    --roast-card: #1a1a1a;
+    --roast-border: #2a2a2a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    transition: background 0.4s, color 0.4s;
+  }
+
+  body.roast-mode {
+    background: var(--roast-bg);
+    color: #e0e0e0;
+  }
+
+  /* ---------- HEADER ---------- */
+  .header {
+    border-bottom: 3px double var(--border);
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--paper);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: background 0.4s, border-color 0.4s;
+  }
+
+  body.roast-mode .header {
+    background: var(--roast-bg);
+    border-color: var(--roast-border);
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--accent); }
+  body.roast-mode .logo span { color: var(--roast-text); }
+
+  .logo-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  body.roast-mode .logo-sub { color: var(--roast-muted); }
+
+  .roast-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .toggle-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color 0.3s;
+  }
+
+  body.roast-mode .toggle-label { color: var(--roast-accent); font-weight: 600; }
+
+  .toggle-switch {
+    width: 48px;
+    height: 26px;
+    background: var(--paper2);
+    border: 2px solid var(--border);
+    border-radius: 13px;
+    position: relative;
+    transition: all 0.3s;
+  }
+
+  body.roast-mode .toggle-switch {
+    background: var(--roast-accent);
+    border-color: var(--roast-accent);
+  }
+
+  .toggle-knob {
+    width: 18px;
+    height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: all 0.3s;
+  }
+
+  body.roast-mode .toggle-knob {
+    transform: translateX(22px);
+    background: white;
+  }
+
+  .toggle-fire { font-size: 16px; }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    max-width: 860px;
+    margin: 60px auto 0;
+    padding: 0 40px;
+    text-align: center;
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  body.roast-mode .hero-eyebrow { color: var(--roast-muted); }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--ink);
+    transition: color 0.4s;
+  }
+
+  body.roast-mode .hero h1 { color: var(--roast-text); }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  body.roast-mode .hero h1 em { color: var(--roast-accent); }
+
+  .hero-sub {
+    margin-top: 16px;
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  body.roast-mode .hero-sub { color: var(--roast-muted); }
+
+  /* ---------- INPUT FORM ---------- */
+  .input-section {
+    max-width: 680px;
+    margin: 40px auto;
+    padding: 0 40px;
+  }
+
+  .input-card {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    padding: 28px;
+    box-shadow: 4px 4px 0 var(--border);
+    transition: all 0.4s;
+  }
+
+  body.roast-mode .input-card {
+    background: var(--roast-card);
+    border-color: var(--roast-border);
+    box-shadow: 4px 4px 0 var(--roast-accent);
+  }
+
+  .input-group {
+    margin-bottom: 16px;
+  }
+
+  .input-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  body.roast-mode .input-label { color: var(--roast-muted); }
+
+  .input-field {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    background: var(--paper);
+    color: var(--ink);
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  .input-field:focus { border-color: var(--accent); }
+
+  body.roast-mode .input-field {
+    background: #111;
+    border-color: var(--roast-border);
+    color: #e0e0e0;
+  }
+
+  body.roast-mode .input-field:focus { border-color: var(--roast-accent); }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .btn-primary {
+    flex: 1;
+    padding: 14px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 3px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-primary:hover { background: #a83520; transform: translateY(-1px); }
+
+  body.roast-mode .btn-primary {
+    background: var(--roast-accent);
+  }
+
+  body.roast-mode .btn-primary:hover { background: #e0005f; }
+
+  .btn-demo {
+    padding: 14px 20px;
+    background: transparent;
+    color: var(--muted);
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-demo:hover { border-color: var(--accent); color: var(--accent); }
+
+  body.roast-mode .btn-demo {
+    border-color: var(--roast-border);
+    color: var(--roast-muted);
+  }
+
+  body.roast-mode .btn-demo:hover {
+    border-color: var(--roast-accent);
+    color: var(--roast-accent);
+  }
+
+  /* ---------- LOADING ---------- */
+  .loading-screen {
+    display: none;
+    max-width: 480px;
+    margin: 60px auto;
+    padding: 0 40px;
+    text-align: center;
+  }
+
+  .loading-screen.active { display: block; }
+
+  .loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    margin: 0 auto 24px;
+    animation: spin 1s linear infinite;
+  }
+
+  body.roast-mode .loading-spinner {
+    border-color: var(--roast-border);
+    border-top-color: var(--roast-accent);
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-steps { list-style: none; text-align: left; margin-top: 24px; }
+
+  .loading-steps li {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--border);
+    opacity: 0.4;
+    transition: opacity 0.4s, color 0.4s;
+  }
+
+  .loading-steps li.done { opacity: 1; color: var(--grade-a); }
+  .loading-steps li.active { opacity: 1; color: var(--accent); animation: pulse 1s ease-in-out infinite; }
+
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  body.roast-mode .loading-steps li.done { color: var(--roast-text); }
+  body.roast-mode .loading-steps li.active { color: var(--roast-accent); }
+  body.roast-mode .loading-steps li { border-color: var(--roast-border); }
+
+  /* ---------- RESULTS ---------- */
+  #results { display: none; max-width: 900px; margin: 0 auto; padding: 40px; }
+  #results.active { display: block; }
+
+  /* Product header */
+  .product-header {
+    border: 2px solid var(--border);
+    padding: 20px 24px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    transition: all 0.4s;
+  }
+
+  body.roast-mode .product-header {
+    background: var(--roast-card);
+    border-color: var(--roast-border);
+  }
+
+  .product-title-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+    max-width: 600px;
+  }
+
+  .report-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    white-space: nowrap;
+    margin-left: 20px;
+  }
+
+  body.roast-mode .report-date { color: var(--roast-muted); }
+
+  /* Score section */
+  .score-section {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+    align-items: start;
+  }
+
+  .score-card {
+    background: white;
+    border: 2px solid var(--border);
+    padding: 28px 32px;
+    text-align: center;
+    box-shadow: 4px 4px 0 var(--border);
+    min-width: 180px;
+    transition: all 0.4s;
+  }
+
+  body.roast-mode .score-card {
+    background: var(--roast-card);
+    border-color: var(--roast-border);
+    box-shadow: 4px 4px 0 var(--roast-accent);
+  }
+
+  .score-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  body.roast-mode .score-label { color: var(--roast-muted); }
+
+  .score-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 72px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--accent);
+    transition: color 0.4s;
+  }
+
+  .score-number.high { color: var(--grade-a); }
+  .score-number.mid { color: var(--accent2); }
+  .score-number.low { color: var(--accent); }
+  .score-number.bad { color: var(--grade-f); }
+
+  .score-grade {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .score-descriptor {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  body.roast-mode .score-descriptor { color: var(--roast-muted); }
+
+  .score-insight {
+    background: white;
+    border: 2px solid var(--border);
+    padding: 24px;
+    transition: all 0.4s;
+  }
+
+  body.roast-mode .score-insight {
+    background: var(--roast-card);
+    border-color: var(--roast-border);
+  }
+
+  .insight-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 12px;
+    color: var(--accent);
+  }
+
+  body.roast-mode .insight-headline { color: var(--roast-accent); }
+
+  .insight-body {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  body.roast-mode .insight-body { color: #b0b0b0; }
+
+  /* Grade cards row */
+  .grade-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .grade-card {
+    background: white;
+    border: 2px solid var(--border);
+    padding: 16px;
+    text-align: center;
+    transition: all 0.4s;
+  }
+
+  body.roast-mode .grade-card {
+    background: var(--roast-card);
+    border-color: var(--roast-border);
+  }
+
+  .grade-category {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  body.roast-mode .grade-category { color: var(--roast-muted); }
+
+  .grade-letter {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .grade-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    margin-top: 4px;
+    color: var(--muted);
+  }
+
+  body.roast-mode .grade-value { color: var(--roast-muted); }
+
+  /* Section headers */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0 16px;
+  }
+
+  .section-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 24px;
+  }
+
+  body.roast-mode .section-num { color: var(--roast-accent); }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+  body.roast-mode .section-line { background: var(--roast-border); }
+
+  /* AI Visibility */
+  .ai-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .ai-engine-card {
+    border: 2px solid var(--border);
+    padding: 16px;
+    background: white;
+    transition: all 0.4s;
+  }
+
+  body.roast-mode .ai-engine-card {
+    background: var(--roast-card);
+    border-color: var(--roast-border);
+  }
+
+  .ai-engine-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .ai-status {
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+
+  .ai-verdict {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  .ai-verdict.found { background: #e8f5eb; color: var(--grade-a); }
+  .ai-verdict.missed { background: #fde8e8; color: var(--grade-f); }
+
+  body.roast-mode .ai-verdict.found { background: rgba(0,200,50,0.15); color: #00c832; }
+  body.roast-mode .ai-verdict.missed { background: rgba(255,45,120,0.15); color: var(--roast-accent); }
+
+  .ai-snippet {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  body.roast-mode .ai-snippet { color: var(--roast-muted); }
+
+  /* Competitor table */
+  .competitor-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border: 2px solid var(--border);
+    transition: all 0.4s;
+  }
+
+  body.roast-mode .competitor-table {
+    background: var(--roast-card);
+    border-color: var(--roast-border);
+  }
+
+  .competitor-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    background: var(--paper2);
+  }
+
+  body.roast-mode .competitor-table th {
+    background: #111;
+    border-color: var(--roast-border);
+    color: var(--roast-muted);
+  }
+
+  .competitor-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  body.roast-mode .competitor-table td { border-color: var(--roast-border); }
+
+  .competitor-table tr.you-row td { background: rgba(200, 71, 42, 0.06); font-weight: 600; }
+  body.roast-mode .competitor-table tr.you-row td { background: rgba(255, 45, 120, 0.08); }
+
+  .score-bar-wrap { display: flex; align-items: center; gap: 10px; }
+
+  .score-bar {
+    height: 8px;
+    border-radius: 1px;
+    background: var(--accent);
+    transition: width 1s ease;
+  }
+
+  .score-bar.high { background: var(--grade-a); }
+  .score-bar.you { background: var(--accent); }
+
+  body.roast-mode .score-bar { background: var(--roast-accent); }
+  body.roast-mode .score-bar.high { background: var(--roast-text); }
+
+  .score-bar-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 26px;
+  }
+
+  /* Gaps / Rufus */
+  .gap-card {
+    border: 2px solid var(--border);
+    background: white;
+    margin-bottom: 12px;
+    transition: all 0.4s;
+    overflow: hidden;
+  }
+
+  body.roast-mode .gap-card {
+    background: var(--roast-card);
+    border-color: var(--roast-border);
+  }
+
+  .gap-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+  }
+
+  .gap-title-area { display: flex; align-items: center; gap: 10px; }
+  .gap-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
+  body.roast-mode .gap-dot { background: var(--roast-accent); }
+
+  .gap-title {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .gap-desc {
+    font-size: 13px;
+    color: var(--muted);
+    padding: 0 18px 14px;
+    line-height: 1.6;
+  }
+
+  body.roast-mode .gap-desc { color: var(--roast-muted); }
+
+  .btn-fix {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    background: transparent;
+    border-radius: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+
+  .btn-fix:hover { background: var(--accent); color: white; }
+
+  body.roast-mode .btn-fix { border-color: var(--roast-accent); color: var(--roast-accent); }
+  body.roast-mode .btn-fix:hover { background: var(--roast-accent); color: white; }
+
+  .fix-panel {
+    display: none;
+    padding: 14px 18px;
+    border-top: 1px dashed var(--border);
+    background: var(--paper);
+    transition: all 0.4s;
+  }
+
+  body.roast-mode .fix-panel {
+    background: #111;
+    border-color: var(--roast-border);
+  }
+
+  .fix-panel.open { display: block; }
+
+  .fix-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  body.roast-mode .fix-label { color: var(--roast-muted); }
+
+  .fix-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--ink);
+    font-style: italic;
+  }
+
+  body.roast-mode .fix-text { color: #d0d0d0; }
+
+  /* Rufus box */
+  .rufus-box {
+    border: 2px solid var(--border);
+    background: white;
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: all 0.4s;
+  }
+
+  body.roast-mode .rufus-box {
+    background: var(--roast-card);
+    border-color: var(--roast-border);
+  }
+
+  .rufus-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  body.roast-mode .rufus-label { color: var(--roast-muted); }
+
+  .rufus-answer {
+    font-size: 14px;
+    line-height: 1.7;
+    font-style: italic;
+    color: var(--muted);
+    padding-left: 12px;
+    border-left: 3px solid var(--border);
+  }
+
+  body.roast-mode .rufus-answer { color: #b0b0b0; border-color: var(--roast-border); }
+
+  /* Strategic advisor */
+  .advisor-box {
+    border: 2px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 24px;
+    margin-bottom: 32px;
+    transition: all 0.4s;
+  }
+
+  body.roast-mode .advisor-box {
+    border-color: var(--roast-text);
+    background: #0a0a0a;
+    color: #e0e0e0;
+  }
+
+  .advisor-header {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--paper2);
+    margin-bottom: 14px;
+    opacity: 0.7;
+  }
+
+  body.roast-mode .advisor-header { color: var(--roast-text); opacity: 0.9; }
+
+  .advisor-text {
+    font-size: 15px;
+    line-height: 1.75;
+  }
+
+  .advisor-sig {
+    margin-top: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    opacity: 0.5;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+  }
+
+  /* Review section */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+
+  .mini-card {
+    border: 2px solid var(--border);
+    background: white;
+    padding: 16px;
+    transition: all 0.4s;
+  }
+
+  body.roast-mode .mini-card {
+    background: var(--roast-card);
+    border-color: var(--roast-border);
+  }
+
+  .mini-card-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  body.roast-mode .mini-card-label { color: var(--roast-muted); }
+
+  .mini-list {
+    list-style: none;
+  }
+
+  .mini-list li {
+    font-size: 13px;
+    padding: 5px 0;
+    border-bottom: 1px dashed var(--border);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  body.roast-mode .mini-list li { color: #d0d0d0; border-color: var(--roast-border); }
+
+  .mini-list li::before { content: "—"; color: var(--muted); font-size: 12px; }
+
+  /* Roast mode specific styles */
+  body.roast-mode .roast-tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    background: rgba(232,255,0,0.1);
+    color: var(--roast-text);
+    border: 1px solid rgba(232,255,0,0.3);
+    border-radius: 2px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  .roast-mode-banner {
+    display: none;
+    text-align: center;
+    padding: 8px;
+    background: var(--roast-accent);
+    color: white;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  body.roast-mode .roast-mode-banner { display: block; }
+
+  /* Export button */
+  .export-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px double var(--border);
+  }
+
+  body.roast-mode .export-row { border-color: var(--roast-border); }
+
+  .btn-export {
+    padding: 12px 24px;
+    border: 2px solid var(--border);
+    background: white;
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-export:hover { border-color: var(--ink); background: var(--ink); color: white; }
+
+  body.roast-mode .btn-export {
+    background: transparent;
+    border-color: var(--roast-border);
+    color: #b0b0b0;
+  }
+
+  body.roast-mode .btn-export:hover {
+    border-color: var(--roast-text);
+    background: transparent;
+    color: var(--roast-text);
+  }
+
+  .powered-by {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-left: auto;
+    align-self: center;
+  }
+
+  body.roast-mode .powered-by { color: var(--roast-muted); }
+
+  /* Animations */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-in { animation: fadeInUp 0.4s ease both; }
+
+  @media (max-width: 640px) {
+    .score-section { grid-template-columns: 1fr; }
+    .grade-row { grid-template-columns: repeat(2, 1fr); }
+    .ai-grid { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .header { padding: 14px 20px; }
+    .hero, .input-section, #results { padding: 0 20px; }
+    #results { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="roast-mode-banner">🔥 ROAST MODE ACTIVATED — NO CAP, YOUR LISTING IS COOKED 🔥</div>
+
+<header class="header">
+  <div>
+    <div class="logo">Seller<span>IQ</span></div>
+    <div class="logo-sub">Amazon Intelligence Platform</div>
+  </div>
+  <div class="roast-toggle" onclick="toggleRoast()">
+    <span class="toggle-label" id="toggle-label">PROFESSIONAL</span>
+    <div class="toggle-switch">
+      <div class="toggle-knob"></div>
+    </div>
+    <span class="toggle-fire">🔥</span>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-eyebrow">Amazon Seller Intelligence</div>
+  <h1>Your listing grade,<br><em>in 30 seconds.</em></h1>
+  <p class="hero-sub">Market size. AI visibility. Review intelligence. Rufus readiness.<br>One URL. One report card.</p>
+</section>
+
+<section class="input-section">
+  <div class="input-card">
+    <div class="input-group">
+      <label class="input-label" for="url-input">Amazon Product URL</label>
+      <input class="input-field" id="url-input" type="text" placeholder="https://amazon.com/dp/B09X3KSSTT" />
+    </div>
+    <div class="input-group">
+      <label class="input-label" for="query-input">Shopper Query</label>
+      <input class="input-field" id="query-input" type="text" placeholder="best magnesium supplement for seniors" />
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="analyze()">Analyze →</button>
+      <button class="btn-demo" onclick="loadDemo()">Try Demo</button>
+    </div>
+  </div>
+</section>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loading">
+  <div class="loading-spinner"></div>
+  <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:8px;">Analyzing your listing…</div>
+  <div style="font-size:13px;color:var(--muted);" id="loading-sub">This takes 20–30 seconds</div>
+  <ul class="loading-steps" id="loading-steps">
+    <li id="step-1">Scraping Amazon listing</li>
+    <li id="step-2">Estimating market size</li>
+    <li id="step-3">Querying Claude + Groq + Gemini</li>
+    <li id="step-4">Analyzing 1000+ reviews</li>
+    <li id="step-5">Simulating Rufus responses</li>
+    <li id="step-6">Generating SellerIQ score</li>
+  </ul>
+</div>
+
+<!-- RESULTS -->
+<div id="results">
+
+  <!-- Product Header -->
+  <div class="product-header animate-in">
+    <div class="product-title-text" id="result-title">—</div>
+    <div class="report-date" id="result-date">—</div>
+  </div>
+
+  <!-- Score + Insight -->
+  <div class="score-section animate-in" style="animation-delay:0.1s">
+    <div class="score-card">
+      <div class="score-label">SellerIQ Score</div>
+      <div class="score-number" id="score-number">—</div>
+      <div class="score-grade" id="score-grade">—</div>
+      <div class="score-descriptor" id="score-descriptor">—</div>
+    </div>
+    <div class="score-insight">
+      <div class="insight-headline" id="insight-headline">—</div>
+      <div class="insight-body" id="insight-body">—</div>
+    </div>
+  </div>
+
+  <!-- Grade Cards -->
+  <div class="grade-row animate-in" style="animation-delay:0.15s">
+    <div class="grade-card">
+      <div class="grade-category">Market Size</div>
+      <div class="grade-letter" id="grade-market">—</div>
+      <div class="grade-value" id="val-market">—</div>
+    </div>
+    <div class="grade-card">
+      <div class="grade-category">AI Visibility</div>
+      <div class="grade-letter" id="grade-ai">—</div>
+      <div class="grade-value" id="val-ai">—</div>
+    </div>
+    <div class="grade-card">
+      <div class="grade-category">Review Auth</div>
+      <div class="grade-letter" id="grade-reviews">—</div>
+      <div class="grade-value" id="val-reviews">—</div>
+    </div>
+    <div class="grade-card">
+      <div class="grade-category">Rufus Ready</div>
+      <div class="grade-letter" id="grade-rufus">—</div>
+      <div class="grade-value" id="val-rufus">—</div>
+    </div>
+  </div>
+
+  <!-- Section 1: AI Visibility -->
+  <div class="section-divider animate-in" style="animation-delay:0.2s">
+    <span class="section-num">I.</span>
+    <span class="section-title">AI Visibility</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="ai-grid animate-in" style="animation-delay:0.25s" id="ai-grid">
+    <!-- filled by JS -->
+  </div>
+
+  <!-- Section 2: Competitor Spy -->
+  <div class="section-divider animate-in" style="animation-delay:0.3s">
+    <span class="section-num">II.</span>
+    <span class="section-title">Competitor Intelligence</span>
+    <div class="section-line"></div>
+  </div>
+  <table class="competitor-table animate-in" style="animation-delay:0.35s">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Seller</th>
+        <th>SellerIQ Score</th>
+      </tr>
+    </thead>
+    <tbody id="competitor-tbody"></tbody>
+  </table>
+
+  <!-- Section 3: Market Size -->
+  <div class="section-divider animate-in" style="animation-delay:0.4s">
+    <span class="section-num">III.</span>
+    <span class="section-title">Market Opportunity</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="two-col animate-in" style="animation-delay:0.45s">
+    <div class="mini-card">
+      <div class="mini-card-label">Total Market (Monthly)</div>
+      <div style="font-family:'Playfair Display',serif;font-size:32px;font-weight:900;" id="market-total">—</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">Top 10 sellers combined</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-card-label">Your Est. Monthly Revenue</div>
+      <div style="font-family:'Playfair Display',serif;font-size:32px;font-weight:900;" id="market-yours">—</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="market-rank">Based on Best Seller Rank</div>
+    </div>
+  </div>
+
+  <!-- Section 4: Review Analytics -->
+  <div class="section-divider animate-in" style="animation-delay:0.5s">
+    <span class="section-num">IV.</span>
+    <span class="section-title">Review Intelligence</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="two-col animate-in" style="animation-delay:0.55s">
+    <div class="mini-card">
+      <div class="mini-card-label">Key Purchase Criteria</div>
+      <ul class="mini-list" id="criteria-list"></ul>
+    </div>
+    <div class="mini-card">
+      <div class="mini-card-label">Top Complaints</div>
+      <ul class="mini-list" id="complaints-list"></ul>
+    </div>
+  </div>
+  <div class="two-col animate-in" style="animation-delay:0.6s">
+    <div class="mini-card">
+      <div class="mini-card-label">Sentiment Score</div>
+      <div style="font-family:'Playfair Display',serif;font-size:36px;font-weight:900;" id="sentiment-score">—</div>
+      <div style="font-size:12px;color:var(--muted);">out of 100</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-card-label">Fake Review Detector</div>
+      <div style="font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:var(--accent);" id="fake-pct">—</div>
+      <div style="font-size:12px;color:var(--muted);" id="fake-desc">estimated AI-generated</div>
+    </div>
+  </div>
+
+  <!-- Section 5: Rufus Readiness -->
+  <div class="section-divider animate-in" style="animation-delay:0.65s">
+    <span class="section-num">V.</span>
+    <span class="section-title">Rufus Readiness</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="rufus-box animate-in" style="animation-delay:0.7s">
+    <div class="rufus-label">Rufus Response to: "<span id="rufus-query-label">...</span>"</div>
+    <div class="rufus-answer" id="rufus-answer">—</div>
+  </div>
+  <div id="gaps-list" class="animate-in" style="animation-delay:0.75s"></div>
+
+  <!-- Section 6: Strategic Advisor -->
+  <div class="section-divider animate-in" style="animation-delay:0.8s">
+    <span class="section-num">VI.</span>
+    <span class="section-title">Strategic Advisor</span>
+    <div class="section-line"></div>
+  </div>
+  <div class="advisor-box animate-in" style="animation-delay:0.85s">
+    <div class="advisor-header">SellerIQ AI Advisor</div>
+    <div class="advisor-text" id="advisor-text">—</div>
+    <div class="advisor-sig">Powered by OpenRouter · Claude · Groq · Gemini</div>
+  </div>
+
+  <!-- Export -->
+  <div class="export-row animate-in" style="animation-delay:0.9s">
+    <button class="btn-export" onclick="window.print()">Export PDF</button>
+    <button class="btn-export" onclick="copyLink()">Share Report</button>
+    <span class="powered-by">SellerIQ · powered by Claude + Groq + Gemini</span>
+  </div>
+
+</div>
+
+<script>
+let isRoastMode = false;
+let currentProductData = null;
+let currentQuery = "";
+
+function toggleRoast() {
+  isRoastMode = !isRoastMode;
+  document.body.classList.toggle('roast-mode', isRoastMode);
+  document.getElementById('toggle-label').textContent = isRoastMode ? 'ROAST MODE' : 'PROFESSIONAL';
+}
+
+function loadDemo() {
+  document.getElementById('url-input').value = 'https://www.amazon.com/dp/B09X3KSSTT';
+  document.getElementById('query-input').value = 'best magnesium supplement for seniors';
+  analyze();
+}
+
+function formatMoney(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return '$' + Math.round(n/1000) + 'K';
+  return '$' + n;
+}
+
+function scoreToGrade(score) {
+  if (score >= 90) return { letter: 'A+', color: 'var(--grade-a)' };
+  if (score >= 80) return { letter: 'A', color: 'var(--grade-a)' };
+  if (score >= 70) return { letter: 'B', color: 'var(--grade-b)' };
+  if (score >= 60) return { letter: 'C', color: 'var(--accent2)' };
+  if (score >= 50) return { letter: 'D', color: 'var(--accent)' };
+  return { letter: 'F', color: 'var(--grade-f)' };
+}
+
+function getScoreClass(score) {
+  if (score >= 80) return 'high';
+  if (score >= 65) return 'mid';
+  if (score >= 50) return 'low';
+  return 'bad';
+}
+
+function animateLoadingSteps() {
+  const steps = ['step-1','step-2','step-3','step-4','step-5','step-6'];
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i > 0) document.getElementById(steps[i-1]).className = 'done';
+    if (i < steps.length) {
+      document.getElementById(steps[i]).className = 'active';
+      i++;
+    } else {
+      clearInterval(interval);
+    }
+  }, 2800);
+  return interval;
+}
+
+async function analyze() {
+  const url = document.getElementById('url-input').value.trim();
+  const query = document.getElementById('query-input').value.trim();
+
+  if (!url) { alert('Please enter an Amazon URL'); return; }
+
+  currentQuery = query;
+
+  // Reset loading steps
+  for (let i = 1; i <= 6; i++) {
+    const el = document.getElementById('step-' + i);
+    if (el) el.className = '';
+  }
+
+  document.getElementById('loading').classList.add('active');
+  document.getElementById('results').classList.remove('active');
+  document.querySelector('.input-section').style.display = 'none';
+  document.querySelector('.hero').style.display = 'none';
+
+  const stepInterval = animateLoadingSteps();
+
+  try {
+    const resp = await fetch('/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, query, roast: isRoastMode })
+    });
+    const data = await resp.json();
+
+    clearInterval(stepInterval);
+    for (let i = 1; i <= 6; i++) {
+      const el = document.getElementById('step-' + i);
+      if (el) el.className = 'done';
+    }
+
+    setTimeout(() => renderResults(data), 400);
+  } catch (e) {
+    clearInterval(stepInterval);
+    document.getElementById('loading').classList.remove('active');
+    document.querySelector('.input-section').style.display = '';
+    document.querySelector('.hero').style.display = '';
+    alert('Analysis failed: ' + e.message);
+  }
+}
+
+function renderResults(data) {
+  document.getElementById('loading').classList.remove('active');
+  document.getElementById('results').classList.add('active');
+
+  currentProductData = data.product;
+  const roast = data.roast;
+
+  // Product header
+  document.getElementById('result-title').textContent = data.product.title || 'Unknown Product';
+  document.getElementById('result-date').innerHTML = 'Report Date<br>' + new Date().toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'});
+
+  // SellerIQ Score
+  const score = data.selleriq_score;
+  const scoreEl = document.getElementById('score-number');
+  scoreEl.textContent = score;
+  scoreEl.className = 'score-number ' + getScoreClass(score);
+  const gradeObj = scoreToGrade(score);
+  document.getElementById('score-grade').textContent = gradeObj.letter;
+  document.getElementById('score-grade').style.color = gradeObj.color;
+
+  const descriptors = {
+    high: 'Dominating the market',
+    mid: 'Needs attention',
+    low: 'Losing ground',
+    bad: 'Critical — act now'
+  };
+  document.getElementById('score-descriptor').textContent = descriptors[getScoreClass(score)];
+
+  // Insight
+  const aiScore = data.ai_visibility.score;
+  const monthly = data.monthly_revenue;
+  const gap = 100 - score;
+  document.getElementById('insight-headline').textContent = roast
+    ? `bestie you're scoring ${score}/100 and losing ${formatMoney(monthly * 0.3)}/month`
+    : `You're losing ${formatMoney(monthly * 0.3)} monthly`;
+  document.getElementById('insight-body').textContent = roast
+    ? `your listing is invisible to ${3-aiScore}/3 AI engines which power like 60% of shopping queries. competitor "Doctor's Best" is ranking #1 everywhere. fix your bullets and glow up within 30 days no cap.`
+    : `Your listing is invisible to ${3-aiScore} of 3 AI engines, which collectively influence over 60% of modern shopping queries. Your top competitor outscores you by ${data.competitors[0]?.score - score || 20}+ points. Fixing your listing information architecture closes this gap within 30 days.`;
+
+  // Grade cards
+  const marketGrade = scoreToGrade(data.market_size > 1000000 ? 90 : data.market_size > 500000 ? 75 : 60);
+  const aiGrade = scoreToGrade(aiScore / 3 * 100);
+  const reviewGrade = scoreToGrade(data.review_data.sentiment_score || 75);
+  const rufusGrade = scoreToGrade(100 - (data.rufus_data.gaps?.length || 3) * 20);
+
+  document.getElementById('grade-market').textContent = marketGrade.letter;
+  document.getElementById('grade-market').style.color = marketGrade.color;
+  document.getElementById('val-market').textContent = formatMoney(data.market_size) + '/mo';
+
+  document.getElementById('grade-ai').textContent = aiGrade.letter;
+  document.getElementById('grade-ai').style.color = aiGrade.color;
+  document.getElementById('val-ai').textContent = aiScore + ' / 3 engines';
+
+  document.getElementById('grade-reviews').textContent = reviewGrade.letter;
+  document.getElementById('grade-reviews').style.color = reviewGrade.color;
+  document.getElementById('val-reviews').textContent = (data.review_data.fake_review_percentage || 12) + '% flagged';
+
+  document.getElementById('grade-rufus').textContent = rufusGrade.letter;
+  document.getElementById('grade-rufus').style.color = rufusGrade.color;
+  document.getElementById('val-rufus').textContent = (data.rufus_data.gaps?.length || 0) + ' gaps found';
+
+  // AI Visibility
+  const aiGrid = document.getElementById('ai-grid');
+  aiGrid.innerHTML = '';
+  const engines = [
+    { key: 'openrouter', name: 'OpenRouter/GPT', icon: '🤖' },
+    { key: 'groq', name: 'Groq / LLaMA', icon: '⚡' },
+    { key: 'gemini', name: 'Gemini', icon: '✨' }
+  ];
+  engines.forEach(eng => {
+    const res = data.ai_visibility.results[eng.key] || {};
+    const mentioned = res.mentioned;
+    const snippet = (res.response || '').substring(0, 120) + '...';
+    aiGrid.innerHTML += `
+      <div class="ai-engine-card">
+        <div class="ai-engine-name">${eng.icon} ${eng.name}</div>
+        <div class="ai-verdict ${mentioned ? 'found' : 'missed'}">${mentioned ? '✓ FOUND' : '✗ MISSED'}</div>
+        <div class="ai-snippet">${snippet}</div>
+      </div>`;
+  });
+
+  // Competitors
+  const tbody = document.getElementById('competitor-tbody');
+  tbody.innerHTML = '';
+  (data.competitors || []).forEach((c, i) => {
+    const maxScore = data.competitors[0].score;
+    const barPct = Math.round(c.score / maxScore * 100);
+    const isYou = c.is_you;
+    const barClass = c.score >= 80 ? 'high' : (isYou ? 'you' : '');
+    tbody.innerHTML += `
+      <tr class="${isYou ? 'you-row' : ''}">
+        <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)">#${i+1}</td>
+        <td>${c.name}${isYou ? ' <span style="font-family:\'DM Mono\',monospace;font-size:10px;opacity:0.6">(you)</span>' : ''}</td>
+        <td>
+          <div class="score-bar-wrap">
+            <div class="score-bar ${barClass}" style="width:${barPct}%"></div>
+            <span class="score-bar-num">${c.score}</span>
+          </div>
+        </td>
+      </tr>`;
+  });
+
+  // Market
+  document.getElementById('market-total').textContent = formatMoney(data.market_size) + '/mo';
+  document.getElementById('market-yours').textContent = formatMoney(data.monthly_revenue) + '/mo';
+  document.getElementById('market-rank').textContent = 'BSR #' + (data.product.bsr || 'N/A') + ' · est. monthly revenue';
+
+  // Review analytics
+  const criteriaList = document.getElementById('criteria-list');
+  criteriaList.innerHTML = (data.review_data.key_purchase_criteria || []).map(c => `<li>${c}</li>`).join('');
+
+  const complaintsList = document.getElementById('complaints-list');
+  complaintsList.innerHTML = (data.review_data.top_complaints || []).map(c => `<li>${c}</li>`).join('');
+
+  document.getElementById('sentiment-score').textContent = data.review_data.sentiment_score || '—';
+  document.getElementById('fake-pct').textContent = (data.review_data.fake_review_percentage || 0) + '%';
+
+  // Rufus
+  document.getElementById('rufus-query-label').textContent = currentQuery;
+  document.getElementById('rufus-answer').textContent = data.rufus_data.rufus_answer || '—';
+
+  // Gaps
+  const gapsList = document.getElementById('gaps-list');
+  gapsList.innerHTML = '';
+  (data.rufus_data.gaps || []).forEach((gap, idx) => {
+    gapsList.innerHTML += `
+      <div class="gap-card" id="gap-${idx}">
+        <div class="gap-header">
+          <div class="gap-title-area">
+            <div class="gap-dot"></div>
+            <div class="gap-title">Missing: ${gap.title}</div>
+          </div>
+          <button class="btn-fix" onclick="fixGap(${idx}, '${gap.title.replace(/'/g, "\\'")}')">Fix it →</button>
+        </div>
+        <div class="gap-desc">${gap.description}</div>
+        <div class="fix-panel" id="fix-panel-${idx}">
+          <div class="fix-label">Suggested bullet point</div>
+          <div class="fix-text" id="fix-text-${idx}">Loading...</div>
+        </div>
+      </div>`;
+  });
+
+  // Strategic advisor
+  document.getElementById('advisor-text').textContent = data.strategic_advice || '—';
+}
+
+async function fixGap(idx, gapTitle) {
+  const panel = document.getElementById('fix-panel-' + idx);
+  const textEl = document.getElementById('fix-text-' + idx);
+  panel.classList.add('open');
+  textEl.textContent = 'Generating fix...';
+
+  try {
+    const resp = await fetch('/fix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gap_title: gapTitle, product_data: currentProductData, roast: isRoastMode })
+    });
+    const data = await resp.json();
+    textEl.textContent = data.fix;
+  } catch (e) {
+    textEl.textContent = 'Could not generate fix. Try again.';
+  }
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    alert('Link copied!');
+  });
+}
+</script>
+</body>
+</html>
