@@ -378,13 +378,59 @@ def get_demo_product_data(url):
     }
 
 
-def generate_competitor_data(your_score):
+def generate_competitor_data(your_score, product_data=None):
+    try:
+        title = product_data.get("title", "") if product_data else ""
+        # Extract short search query from title (first 4 words)
+        search_query = " ".join(title.split()[:4])
+        search_url = f"https://www.amazon.in/s?k={requests.utils.quote(search_query)}"
+        
+        scraper_url = f"http://api.scraperapi.com?api_key={SCRAPER_API_KEY}&url={search_url}"
+        resp = requests.get(scraper_url, timeout=25)
+        soup = BeautifulSoup(resp.text, "html.parser")
+        
+        # Grab top product titles from search results
+        results = soup.select("h2.a-size-mini span.a-text-normal")[:6]
+        names = [r.get_text(strip=True)[:30] for r in results if r.get_text(strip=True)]
+        
+        # Remove your own product from list
+        names = [n for n in names if n.lower() not in title.lower()][:4]
+        
+        if len(names) < 4:
+            raise Exception("Not enough results")
+            
+    except:
+        # Fallback to category-based names
+        return generate_competitor_data_fallback(your_score, product_data)
+    
     competitors = [
-        {"name": "Top Competitor A", "score": min(98, your_score + random.randint(18, 28))},
-        {"name": "Top Competitor B", "score": min(98, your_score + random.randint(8, 18))},
-        {"name": "Top Competitor C", "score": min(98, your_score + random.randint(3, 12))},
+        {"name": names[0], "score": min(98, your_score + random.randint(15,25))},
+        {"name": names[1], "score": min(98, your_score + random.randint(8,15))},
+        {"name": names[2], "score": min(98, your_score + random.randint(3,10))},
         {"name": "You", "score": your_score, "is_you": True},
-        {"name": "Lower Competitor", "score": max(20, your_score - random.randint(8, 18))}
+        {"name": names[3], "score": max(20, your_score - random.randint(8,18))}
+    ]
+    competitors.sort(key=lambda x: x["score"], reverse=True)
+    return competitors
+
+
+def generate_competitor_data_fallback(your_score, product_data=None):
+    title = product_data.get("title", "").lower() if product_data else ""
+    if any(w in title for w in ["magnesium","vitamin","supplement","protein"]):
+        names = ["Doctor's Best","Pure Encapsulations","Thorne","Nature Made","NOW Foods"]
+    elif any(w in title for w in ["face","skin","wash","cleanser","moistur","cetaphil"]):
+        names = ["CeraVe","La Roche-Posay","Neutrogena","Aveeno","Vanicream"]
+    elif any(w in title for w in ["ac","air condition","daikin","split"]):
+        names = ["Voltas","Blue Star","Carrier","Hitachi","LG"]
+    else:
+        names = ["Market Leader","Category Top","Brand Alpha","Competitor X","Value Brand"]
+    
+    competitors = [
+        {"name": names[0], "score": min(98, your_score + random.randint(15,25))},
+        {"name": names[1], "score": min(98, your_score + random.randint(8,15))},
+        {"name": names[2], "score": min(98, your_score + random.randint(3,10))},
+        {"name": "You", "score": your_score, "is_you": True},
+        {"name": names[4], "score": max(20, your_score - random.randint(8,18))}
     ]
     competitors.sort(key=lambda x: x["score"], reverse=True)
     return competitors
