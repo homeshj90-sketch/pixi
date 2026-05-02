@@ -260,7 +260,7 @@ Rufus gaps: {[g['title'] for g in gaps]}
 Write a 3-4 sentence strategic recommendation. Be specific about what to fix and expected impact. End with a timeframe."""
 
     try:
-        return call_openrouter(prompt, system=system, roast=False)
+        return call_openrouter(prompt, system=system)
     except:
         if roast:
             return "bestie... your listing is stuck in 2019 and AI engines are OUT here recommending your competitors. no cap, you're leaving like $40K/month on the table because you forgot to mention 'third-party tested'. the algorithm said 'not today'. fix your bullets in the next 7 days and watch that SellerIQ score go brrr."
