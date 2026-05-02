@@ -1329,9 +1329,10 @@ function renderResults(data) {
   const aiScore = data.ai_visibility.score;
   const monthly = data.monthly_revenue;
   const gap = 100 - score;
-  document.getElementById('insight-headline').textContent = roast
-    ? `bestie you're scoring ${score}/100 and losing ${formatMoney(monthly * 0.3)}/month`
+  const lossMsg = score >= 80 
+    ? `You could capture ${formatMoney(monthly * 0.2)} more monthly`
     : `You're losing ${formatMoney(monthly * 0.3)} monthly`;
+document.getElementById('insight-headline').textContent = lossMsg;
   document.getElementById('insight-body').textContent = roast
     ? `your listing is invisible to ${3-aiScore}/3 AI engines which power like 60% of shopping queries. competitor "Doctor's Best" is ranking #1 everywhere. fix your bullets and glow up within 30 days no cap.`
     : `Your listing is invisible to ${3-aiScore} of 3 AI engines, which collectively influence over 60% of modern shopping queries. Your top competitor outscores you by ${data.competitors[0]?.score - score || 20}+ points. Fixing your listing information architecture closes this gap within 30 days.`;
