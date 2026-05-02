@@ -98,13 +98,18 @@ def call_groq(prompt):
     return r.json()["choices"][0]["message"]["content"]
 
 def call_gemini(prompt):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
-    body = {"contents": [{"parts": [{"text": prompt}]}]}
-    r = requests.post(url, json=body, timeout=20)
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    body = {
+        "model": "google/gemini-2.0-flash-exp:free",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 300
+    }
+    r = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=body, timeout=20)
     data = r.json()
-    if "candidates" not in data:
-        raise Exception(f"Gemini error: {data}")
-    return data["candidates"][0]["content"]["parts"][0]["text"]
+    return data["choices"][0]["message"]["content"]
 
 
 # ---------- ANALYSIS FUNCTIONS ----------
