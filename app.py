@@ -13,7 +13,6 @@ SCRAPER_API_KEY = os.environ.get("SCRAPER_API_KEY", "")
 # ---------- SCRAPING ----------
 
 def scrape_amazon(url):
-    """Scrape Amazon product listing via ScraperAPI."""
     try:
         scraper_url = f"http://api.scraperapi.com?api_key={SCRAPER_API_KEY}&url={url}&render=true"
         resp = requests.get(scraper_url, timeout=30)
@@ -53,7 +52,6 @@ def scrape_amazon(url):
 
 
 def estimate_market_size(bsr):
-    """Estimate monthly revenue from BSR."""
     if bsr <= 100: daily = 500
     elif bsr <= 500: daily = 200
     elif bsr <= 1000: daily = 100
@@ -81,6 +79,8 @@ def call_openrouter(prompt, system="You are a helpful assistant.", roast=False):
     }
     r = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=body, timeout=30)
     data = r.json()
+    if "choices" not in data:
+        raise Exception(f"OpenRouter error: {data}")
     return data["choices"][0]["message"]["content"]
 
 
@@ -95,7 +95,11 @@ def call_groq(prompt):
         "max_tokens": 300
     }
     r = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=body, timeout=20)
-    return r.json()["choices"][0]["message"]["content"]
+    data = r.json()
+    if "choices" not in data:
+        raise Exception(f"Groq error: {data}")
+    return data["choices"][0]["message"]["content"]
+
 
 def call_gemini(prompt):
     headers = {
@@ -113,6 +117,7 @@ def call_gemini(prompt):
         raise Exception(f"OpenRouter error: {data}")
     return data["choices"][0]["message"]["content"]
 
+
 # ---------- ANALYSIS FUNCTIONS ----------
 
 def analyze_ai_visibility(product_data, query, roast=False):
@@ -128,11 +133,7 @@ Respond as a shopping assistant. Give your top 3 product recommendations for thi
     results = {}
     for engine, fn in [("openrouter", call_openrouter), ("groq", call_groq), ("gemini", call_gemini)]:
         try:
-            if engine == "openrouter":
-                resp = fn(visibility_prompt)
-            else:
-                resp = fn(visibility_prompt)
-            
+            resp = fn(visibility_prompt)
             lower = resp.lower()
             product_words = [w for w in product_title.lower().split() if len(w) > 3]
             mentioned = any(w in lower for w in product_words) or asin.lower() in lower
@@ -283,7 +284,7 @@ Write ONE improved bullet point that addresses this gap. Make it compelling and 
     try:
         return call_openrouter(prompt, system=system)
     except:
-        return f"OPTIMIZED FOR {gap_title.upper()}: Lab-verified formula with documented efficacy for adults 60+, third-party tested by NSF International for purity and potency you can trust."
+        return f"OPTIMIZED FOR {gap_title.upper()}: Lab-verified formula with documented efficacy, third-party tested for purity and potency you can trust."
 
 
 def calculate_selleriq_score(ai_visibility, review_data, rufus_data):
@@ -293,6 +294,76 @@ def calculate_selleriq_score(ai_visibility, review_data, rufus_data):
     gaps_penalty = len(rufus_data.get("gaps", [])) * 5
     base = 60 + ai_score + sentiment - fake_penalty - gaps_penalty
     return max(20, min(98, int(base)))
+
+
+# ---------- COMPETITOR DATA ----------
+
+def generate_competitor_data(your_score, product_data=None):
+    try:
+        title = product_data.get("title", "") if product_data else ""
+        search_query = " ".join(title.split()[:4])
+
+        search_url = f"https://www.amazon.com/s?k={requests.utils.quote(search_query)}"
+        scraper_url = f"http://api.scraperapi.com?api_key={SCRAPER_API_KEY}&url={search_url}"
+        resp = requests.get(scraper_url, timeout=25)
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        # Try multiple selectors
+        results = soup.select("h2 span.a-text-normal")
+        if not results:
+            results = soup.select("[data-cy='title-recipe'] span")
+        if not results:
+            results = soup.select("h2.a-size-mini span")
+
+        names = []
+        for r in results:
+            text = r.get_text(strip=True)
+            if text and len(text) > 5 and text.lower() not in title.lower():
+                brand = " ".join(text.split()[:2])
+                if brand not in names:
+                    names.append(brand)
+            if len(names) >= 4:
+                break
+
+        if len(names) < 4:
+            raise Exception("Not enough results")
+
+    except:
+        return generate_competitor_data_fallback(your_score, product_data)
+
+    competitors = [
+        {"name": names[0], "score": min(98, your_score + random.randint(15, 25))},
+        {"name": names[1], "score": min(98, your_score + random.randint(8, 15))},
+        {"name": names[2], "score": min(98, your_score + random.randint(3, 10))},
+        {"name": "You", "score": your_score, "is_you": True},
+        {"name": names[3], "score": max(20, your_score - random.randint(8, 18))}
+    ]
+    competitors.sort(key=lambda x: x["score"], reverse=True)
+    return competitors
+
+
+def generate_competitor_data_fallback(your_score, product_data=None):
+    title = product_data.get("title", "").lower() if product_data else ""
+    if any(w in title for w in ["magnesium", "vitamin", "supplement", "protein"]):
+        names = ["Doctor's Best", "Pure Encapsulations", "Thorne", "Nature Made", "NOW Foods"]
+    elif any(w in title for w in ["face", "skin", "wash", "cleanser", "moistur", "cetaphil"]):
+        names = ["CeraVe", "La Roche-Posay", "Neutrogena", "Aveeno", "Vanicream"]
+    elif any(w in title for w in ["ac", "air condition", "daikin", "split"]):
+        names = ["Voltas", "Blue Star", "Carrier", "Hitachi", "LG"]
+    elif any(w in title for w in ["phone", "mobile", "iphone", "samsung"]):
+        names = ["Samsung", "Apple", "OnePlus", "Xiaomi", "Realme"]
+    else:
+        names = ["Market Leader", "Category Top", "Brand Alpha", "Competitor X", "Value Brand"]
+
+    competitors = [
+        {"name": names[0], "score": min(98, your_score + random.randint(15, 25))},
+        {"name": names[1], "score": min(98, your_score + random.randint(8, 15))},
+        {"name": names[2], "score": min(98, your_score + random.randint(3, 10))},
+        {"name": "You", "score": your_score, "is_you": True},
+        {"name": names[4], "score": max(20, your_score - random.randint(8, 18))}
+    ]
+    competitors.sort(key=lambda x: x["score"], reverse=True)
+    return competitors
 
 
 # ---------- ROUTES ----------
@@ -309,26 +380,22 @@ def analyze():
     query = data.get("query", "best magnesium supplement for seniors").strip()
     roast = data.get("roast", False)
 
-    # Scrape product
     product_data = scrape_amazon(url)
     if "error" in product_data and product_data.get("title") == "Demo Product":
-        # Use demo data if scraping fails
         product_data = get_demo_product_data(url)
 
-    # Run all analyses
     ai_visibility = analyze_ai_visibility(product_data, query, roast)
     review_data = analyze_reviews(product_data, roast)
     rufus_data = analyze_rufus(product_data, query, roast)
     strategic_advice = generate_strategic_advice(product_data, ai_visibility, review_data, rufus_data, roast)
     selleriq_score = calculate_selleriq_score(ai_visibility, review_data, rufus_data)
 
-    # Simulate competitor data
-    competitors = generate_competitor_data(selleriq_score)
+    # ✅ FIXED: passing product_data for real-time competitor scraping
+    competitors = generate_competitor_data(selleriq_score, product_data)
 
-    # Market size
     bsr = product_data.get("bsr", 5000)
     monthly_revenue = estimate_market_size(bsr)
-    market_size = monthly_revenue * 15  # Top 10 combined estimate
+    market_size = monthly_revenue * 15
 
     return jsonify({
         "product": product_data,
@@ -376,64 +443,6 @@ def get_demo_product_data(url):
         "asin": "B09X3KSSTT",
         "url": url
     }
-
-
-def generate_competitor_data(your_score, product_data=None):
-    try:
-        title = product_data.get("title", "") if product_data else ""
-        # Extract short search query from title (first 4 words)
-        search_query = " ".join(title.split()[:4])
-        search_url = f"https://www.amazon.in/s?k={requests.utils.quote(search_query)}"
-        
-        scraper_url = f"http://api.scraperapi.com?api_key={SCRAPER_API_KEY}&url={search_url}"
-        resp = requests.get(scraper_url, timeout=25)
-        soup = BeautifulSoup(resp.text, "html.parser")
-        
-        # Grab top product titles from search results
-        results = soup.select("h2.a-size-mini span.a-text-normal")[:6]
-        names = [r.get_text(strip=True)[:30] for r in results if r.get_text(strip=True)]
-        
-        # Remove your own product from list
-        names = [n for n in names if n.lower() not in title.lower()][:4]
-        
-        if len(names) < 4:
-            raise Exception("Not enough results")
-            
-    except:
-        # Fallback to category-based names
-        return generate_competitor_data_fallback(your_score, product_data)
-    
-    competitors = [
-        {"name": names[0], "score": min(98, your_score + random.randint(15,25))},
-        {"name": names[1], "score": min(98, your_score + random.randint(8,15))},
-        {"name": names[2], "score": min(98, your_score + random.randint(3,10))},
-        {"name": "You", "score": your_score, "is_you": True},
-        {"name": names[3], "score": max(20, your_score - random.randint(8,18))}
-    ]
-    competitors.sort(key=lambda x: x["score"], reverse=True)
-    return competitors
-
-
-def generate_competitor_data_fallback(your_score, product_data=None):
-    title = product_data.get("title", "").lower() if product_data else ""
-    if any(w in title for w in ["magnesium","vitamin","supplement","protein"]):
-        names = ["Doctor's Best","Pure Encapsulations","Thorne","Nature Made","NOW Foods"]
-    elif any(w in title for w in ["face","skin","wash","cleanser","moistur","cetaphil"]):
-        names = ["CeraVe","La Roche-Posay","Neutrogena","Aveeno","Vanicream"]
-    elif any(w in title for w in ["ac","air condition","daikin","split"]):
-        names = ["Voltas","Blue Star","Carrier","Hitachi","LG"]
-    else:
-        names = ["Market Leader","Category Top","Brand Alpha","Competitor X","Value Brand"]
-    
-    competitors = [
-        {"name": names[0], "score": min(98, your_score + random.randint(15,25))},
-        {"name": names[1], "score": min(98, your_score + random.randint(8,15))},
-        {"name": names[2], "score": min(98, your_score + random.randint(3,10))},
-        {"name": "You", "score": your_score, "is_you": True},
-        {"name": names[4], "score": max(20, your_score - random.randint(8,18))}
-    ]
-    competitors.sort(key=lambda x: x["score"], reverse=True)
-    return competitors
 
 
 if __name__ == "__main__":
