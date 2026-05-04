@@ -1,5 +1,5 @@
 # SellerIQ — Amazon Intelligence Platform
-Before you get started please watch ## Demo Video at https://youtu.be/XlG1FPez2f8
+# Before you get started please watch Demo Video at https://youtu.be/XlG1FPez2f8
 
 
 Paste any Amazon product URL and get a full intelligence report:
